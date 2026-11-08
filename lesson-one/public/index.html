@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesson 1.1 — Identity, Trust and the Three Questions</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f1117;
+      color: #e1e4e8;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 20px 32px;
+    }
+    header h1 { font-size: 1.3rem; color: #f0f6fc; }
+    header p  { font-size: 0.85rem; color: #8b949e; margin-top: 4px; }
+
+    .token-bar {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 12px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: #8b949e;
+    }
+    .token-bar select {
+      background: #21262d;
+      color: #e1e4e8;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .token-bar .token-display {
+      font-family: monospace;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      color: #79c0ff;
+    }
+
+    main { padding: 24px 32px; max-width: 1100px; margin: 0 auto; }
+
+    .demo {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .demo-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .demo-header h2 { font-size: 1rem; color: #f0f6fc; }
+    .demo-badge {
+      font-size: 0.7rem;
+      background: #1f6feb;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .demo-quote {
+      margin: 0;
+      padding: 12px 20px;
+      border-bottom: 1px solid #30363d;
+      border-left: 3px solid #388bfd;
+      background: #0d1117;
+      font-style: italic;
+      font-size: 0.85rem;
+      color: #79c0ff;
+    }
+
+    .demo-concept {
+      padding: 12px 20px;
+      font-size: 0.85rem;
+      color: #8b949e;
+      border-bottom: 1px solid #30363d;
+      line-height: 1.6;
+    }
+
+    .sides {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    .side {
+      padding: 16px 20px;
+    }
+    .side.broken { border-right: 1px solid #30363d; }
+
+    .side h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .side.broken h3 { color: #f85149; }
+    .side.secure h3 { color: #3fb950; }
+
+    .side label {
+      display: block;
+      font-size: 0.75rem;
+      color: #8b949e;
+      margin-bottom: 4px;
+      margin-top: 10px;
+    }
+
+    .side input, .side select {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      color: #e1e4e8;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 7px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-family: monospace;
+      cursor: pointer;
+      margin-bottom: 8px;
+      margin-right: 6px;
+      font-weight: 500;
+    }
+    .btn-broken { background: #3d1a1a; color: #f85149; border: 1px solid #5a2020; }
+    .btn-broken:hover { background: #521f1f; }
+    .btn-secure { background: #12261e; color: #3fb950; border: 1px solid #1a4228; }
+    .btn-secure:hover { background: #182f24; }
+    .btn-neutral { background: #21262d; color: #8b949e; border: 1px solid #30363d; }
+    .btn-neutral:hover { background: #2d333b; }
+
+    .response {
+      margin-top: 10px;
+      padding: 10px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      min-height: 48px;
+      color: #8b949e;
+    }
+    .response.ok       { border-color: #3fb950; color: #3fb950; }
+    .response.err401   { border-color: #f0883e; color: #f0883e; }
+    .response.err403   { border-color: #bc8cff; color: #bc8cff; }
+    .response.err-other { border-color: #f85149; color: #f85149; }
+    .response.warn     { border-color: #e3b341; color: #e3b341; }
+
+    .reset-bar {
+      padding: 10px 20px;
+      border-top: 1px solid #30363d;
+      background: #0d1117;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: #8b949e;
+    }
+
+    .audit-panel {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .audit-note {
+      padding: 20px;
+      font-size: 0.85rem;
+      color: #8b949e;
+      line-height: 1.7;
+    }
+    .audit-note code {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #79c0ff;
+    }
+    .audit-example {
+      margin: 0 20px 20px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      line-height: 1.8;
+    }
+    .audit-allow  { color: #3fb950; }
+    .audit-deny   { color: #f85149; }
+    .audit-anon   { color: #f0883e; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Lesson 1.1 — Identity, Trust and the Three Questions</h1>
+  <p>Auth Engineering Handbook · Phase 1 · Interactive Demo</p>
+</header>
+
+<!-- Global token selector -->
+<div class="token-bar">
+  <span>Active token:</span>
+  <select id="global-token" onchange="updateTokenDisplay()">
+    <option value="token-alice">token-alice  (Alice · role: user)</option>
+    <option value="token-bob">token-bob  (Bob · role: admin)</option>
+    <option value="">— No token (unauthenticated) —</option>
+    <option value="bad-token">bad-token  (invalid / unknown)</option>
+  </select>
+  <span>→</span>
+  <span class="token-display" id="token-display">Authorization: Bearer token-alice</span>
+</div>
+
+<main>
+
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<!-- DEMO 1 — Identity from Request Body                                       -->
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<div class="demo">
+  <div class="demo-header">
+    <h2>Demo 1 — Identity from Request Body</h2>
+    <span class="demo-badge">Lesson 1.1</span>
+  </div>
+  <blockquote class="demo-quote">
+    "Identity comes only from the verified credential, never from client-supplied fields."
+  </blockquote>
+  <div class="demo-concept">
+    The broken endpoint reads <code style="color:#79c0ff">userId</code> from the request body. Any client can set that field to anyone's ID.
+    Try sending <strong>token-alice</strong> (Alice, user id=1) but set <em>Spoof userId</em> to <strong>2</strong> (Bob).
+    The broken endpoint will act as Bob. The secure endpoint ignores the body field entirely and uses the token.
+  </div>
+  <div class="sides">
+    <div class="side broken">
+      <h3>Broken</h3>
+      <label>Spoof userId in body (attacker sets this)</label>
+      <input type="number" id="d1-spoof" value="2" min="1" max="2">
+      <button class="btn btn-broken" onclick="d1Broken()">POST /api/broken/transfer</button>
+      <div class="response" id="d1-broken-out">— response will appear here —</div>
+    </div>
+    <div class="side secure">
+      <h3>Secure</h3>
+      <label>Spoof userId in body (will be ignored)</label>
+      <input type="number" id="d1-spoof-s" value="2" min="1" max="2">
+      <button class="btn btn-secure" onclick="d1Secure()">POST /api/secure/transfer</button>
+      <div class="response" id="d1-secure-out">— response will appear here —</div>
+    </div>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<!-- DEMO 2 — IDOR / Broken Access Control                                     -->
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<div class="demo">
+  <div class="demo-header">
+    <h2>Demo 2 — IDOR / Broken Access Control</h2>
+    <span class="demo-badge">Lesson 1.1 · OWASP A01:2025</span>
+  </div>
+  <blockquote class="demo-quote">
+    "Any logged-in user can fetch any /orders/:id → Customers iterate IDs and read everyone's orders (IDOR/BOLA)."
+  </blockquote>
+  <div class="demo-concept">
+    Alice (token-alice) owns orders <strong>101</strong> and <strong>103</strong>.
+    Bob (token-bob) owns order <strong>102</strong>.
+    With token-alice, try fetching order <strong>102</strong> — the broken endpoint returns it, the secure one blocks it.
+    This is Insecure Direct Object Reference (IDOR), ranked A01 in OWASP Top 10:2025.
+  </div>
+  <div class="sides">
+    <div class="side broken">
+      <h3>Broken</h3>
+      <label>Order ID to fetch</label>
+      <input type="number" id="d2-id-b" value="102" min="101" max="103">
+      <button class="btn btn-broken" onclick="d2Broken()">GET /api/broken/orders/:id</button>
+      <div class="response" id="d2-broken-out">— response will appear here —</div>
+    </div>
+    <div class="side secure">
+      <h3>Secure</h3>
+      <label>Order ID to fetch</label>
+      <input type="number" id="d2-id-s" value="102" min="101" max="103">
+      <label>403 vs 404 mode</label>
+      <select id="d2-mode">
+        <option value="">Default — 403 (reveals existence)</option>
+        <option value="hide">mode=hide — 404 (conceals existence)</option>
+      </select>
+      <button class="btn btn-secure" onclick="d2Secure()">GET /api/secure/orders/:id</button>
+      <div class="response" id="d2-secure-out">— response will appear here —</div>
+    </div>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<!-- DEMO 3 — Hidden Button / UI-Only Gating                                   -->
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<div class="demo">
+  <div class="demo-header">
+    <h2>Demo 3 — Hidden Button / UI-Only Gating</h2>
+    <span class="demo-badge">Lesson 1.1 · Trust Boundary</span>
+  </div>
+  <blockquote class="demo-quote">
+    "'It's secure, non-admins never see the button.' — UI gating for UX, server check for security."
+  </blockquote>
+  <div class="demo-concept">
+    The UI shows "Delete Seller" <em>only</em> when the token role is admin (Bob). But the broken endpoint
+    doesn't check the role on the server — anyone can call it directly.
+    Switch to <strong>token-alice</strong> (user) and click the broken delete button: it succeeds.
+    Then try the secure endpoint: 403.
+  </div>
+  <div class="sides">
+    <div class="side broken">
+      <h3>Broken</h3>
+      <label>Seller ID</label>
+      <input type="number" id="d3-id-b" value="10" min="10" max="11">
+      <!-- UI hides this for non-admins — but it's pointless if the endpoint doesn't check -->
+      <div id="d3-ui-gate" style="font-size:0.75rem; color:#8b949e; margin-bottom:8px;">
+        (UI gate: button visible to all — simulating non-admin seeing hidden button bypassed)
+      </div>
+      <button class="btn btn-broken" onclick="d3Broken()">DELETE /api/broken/sellers/:id</button>
+      <div class="response" id="d3-broken-out">— response will appear here —</div>
+    </div>
+    <div class="side secure">
+      <h3>Secure</h3>
+      <label>Seller ID</label>
+      <input type="number" id="d3-id-s" value="10" min="10" max="11">
+      <div id="d3-role-note" style="font-size:0.75rem; color:#8b949e; margin-bottom:8px;">
+        Server checks role. Use token-alice → 403. Use token-bob → 200.
+      </div>
+      <button class="btn btn-secure" onclick="d3Secure()">DELETE /api/secure/sellers/:id</button>
+      <div class="response" id="d3-secure-out">— response will appear here —</div>
+    </div>
+  </div>
+  <div class="reset-bar">
+    <button class="btn btn-neutral" onclick="resetAll()">POST /api/reset — restore sellers</button>
+    <span id="reset-out"></span>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<!-- DEMO 4 — 401 vs 403                                                       -->
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<div class="demo">
+  <div class="demo-header">
+    <h2>Demo 4 — 401 vs 403 Status Codes</h2>
+    <span class="demo-badge">Lesson 1.1</span>
+  </div>
+  <blockquote class="demo-quote">
+    "HTTP 401 Unauthorized really means unauthenticated; 403 Forbidden means 'I know who you are, and the answer is no.'"
+  </blockquote>
+  <div class="demo-concept">
+    Four scenarios against the same secure endpoint. The token selector above controls your identity.
+    Watch the status code — 401 points to authentication problems; 403 points to the authorization policy.
+  </div>
+  <div class="sides">
+    <div class="side broken" style="border-right: none;">
+      <h3 style="color:#f0f6fc;">Four scenarios — use different tokens above</h3>
+
+      <label>Scenario A — No credential → expect 401</label>
+      <button class="btn btn-neutral" onclick="d4Test('', 101, false, 'd4-a')">GET /api/secure/orders/101 (no token)</button>
+      <div class="response" id="d4-a">—</div>
+
+      <label style="margin-top:14px;">Scenario B — Bad/invalid token → expect 401</label>
+      <button class="btn btn-neutral" onclick="d4Test('bad-token', 101, false, 'd4-b')">GET /api/secure/orders/101 (bad-token)</button>
+      <div class="response" id="d4-b">—</div>
+
+      <label style="margin-top:14px;">Scenario C — Valid token, wrong owner → expect 403</label>
+      <button class="btn btn-neutral" onclick="d4Test('token-alice', 102, false, 'd4-c')">GET /api/secure/orders/102 (Alice → Bob's order)</button>
+      <div class="response" id="d4-c">—</div>
+
+      <label style="margin-top:14px;">Scenario D — Valid token, own resource → expect 200</label>
+      <button class="btn btn-neutral" onclick="d4Test('token-alice', 101, false, 'd4-d')">GET /api/secure/orders/101 (Alice → her order)</button>
+      <div class="response" id="d4-d">—</div>
+
+      <label style="margin-top:14px;">Scenario E — 403 vs 404 tradeoff (mode=hide)</label>
+      <button class="btn btn-neutral" onclick="d4Test('token-alice', 102, true, 'd4-e')">GET /api/secure/orders/102?mode=hide (Alice → Bob's, hidden)</button>
+      <div class="response" id="d4-e">—</div>
+    </div>
+    <div class="side secure" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<!-- DEMO 5 — Stale Proof / Revocation                                         -->
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<div class="demo">
+  <div class="demo-header">
+    <h2>Demo 5 — Stale Proof / Token Revocation</h2>
+    <span class="demo-badge">Lesson 1.1 · Bearer Credential</span>
+  </div>
+  <blockquote class="demo-quote">
+    "Whoever holds the card is you (a bearer credential); a lost card must be invalidated (the revocation problem)."
+  </blockquote>
+  <div class="demo-concept">
+    After logout, can the token still be used? The broken logout returns 200 but does nothing server-side —
+    the token remains valid. The secure logout adds the token to a blacklist;
+    the next request with that token gets 401.
+    <br><br>
+    <strong>Recommended flow:</strong> (1) Click broken logout → (2) Click "Check token" → 200 (still alive).
+    Then (3) Reset → (4) Click secure logout → (5) Click "Check token" → 401 (revoked).
+  </div>
+  <div class="sides">
+    <div class="side broken">
+      <h3>Broken</h3>
+      <button class="btn btn-broken" onclick="d5BrokenLogout()">POST /api/broken/logout</button>
+      <div class="response" id="d5-broken-logout">—</div>
+      <button class="btn btn-neutral" onclick="d5Check('d5-broken-check')">GET /api/profile (check if token works)</button>
+      <div class="response" id="d5-broken-check">—</div>
+    </div>
+    <div class="side secure">
+      <h3>Secure</h3>
+      <button class="btn btn-secure" onclick="d5SecureLogout()">POST /api/secure/logout</button>
+      <div class="response" id="d5-secure-logout">—</div>
+      <button class="btn btn-neutral" onclick="d5Check('d5-secure-check')">GET /api/profile (check if token works)</button>
+      <div class="response" id="d5-secure-check">—</div>
+    </div>
+  </div>
+  <div class="reset-bar">
+    <button class="btn btn-neutral" onclick="resetAll()">POST /api/reset — clear blacklist</button>
+    <span id="reset-out-5"></span>
+  </div>
+</div>
+
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<!-- DEMO 6 — Auditing                                                         -->
+<!-- ───────────────────────────────────────────────────────────────────────── -->
+<div class="demo audit-panel">
+  <div class="demo-header">
+    <h2>Demo 6 — Auditing</h2>
+    <span class="demo-badge">Lesson 1.1</span>
+  </div>
+  <blockquote class="demo-quote">
+    "Auditing (Accounting): 'What happened, and who did it?' The record that lets you investigate later."
+  </blockquote>
+  <div class="audit-note">
+    Every request to <code>/api/*</code> is logged in the terminal where you ran <code>node server.js</code>.
+    Look for lines like these as you interact with the demos above:
+  </div>
+  <div class="audit-example">
+    <span class="audit-allow">[AUDIT] 2026-11-08T10:00:01Z | user=1(user)  | GET /orders/101  | ALLOW</span><br>
+    <span class="audit-deny"> [AUDIT] 2026-11-08T10:00:03Z | user=1(user)  | GET /orders/102  | DENY(403)</span><br>
+    <span class="audit-anon"> [AUDIT] 2026-11-08T10:00:05Z | ANON          | GET /orders/101  | DENY(401)</span><br>
+    <span class="audit-deny"> [AUDIT] 2026-11-08T10:00:07Z | user=1(user)  | DELETE /sellers/10 | DENY(403)</span><br>
+    <span class="audit-allow">[AUDIT] 2026-11-08T10:00:09Z | user=2(admin) | DELETE /sellers/10 | ALLOW</span>
+  </div>
+  <div class="audit-note" style="border-top:1px solid #30363d; padding-top:14px;">
+    Notice: <strong>ALLOW</strong> and <strong>DENY</strong> are recorded with the principal, path, and timestamp.
+    This is how you answer "did user X access resource Y at time Z?" after an incident.
+    Without this, you are flying blind.
+  </div>
+</div>
+
+</main>
+
+<script>
+  // ── Token helpers ──────────────────────────────────────────────────────────
+  function getToken() { return document.getElementById('global-token').value; }
+
+  function updateTokenDisplay() {
+    const tok = getToken();
+    const el = document.getElementById('token-display');
+    el.textContent = tok ? `Authorization: Bearer ${tok}` : '(no token — unauthenticated)';
+    el.style.color = tok === 'bad-token' ? '#f85149' : tok === '' ? '#f0883e' : '#79c0ff';
+  }
+
+  function authHeaders(json = false) {
+    const h = {};
+    const tok = getToken();
+    if (tok) h['Authorization'] = `Bearer ${tok}`;
+    if (json) h['Content-Type'] = 'application/json';
+    return h;
+  }
+
+  function authHeadersForToken(token, json = false) {
+    const h = {};
+    if (token) h['Authorization'] = `Bearer ${token}`;
+    if (json) h['Content-Type'] = 'application/json';
+    return h;
+  }
+
+  async function display(elId, response) {
+    const el = document.getElementById(elId);
+    let data;
+    try { data = await response.json(); } catch { data = { raw: await response.text() }; }
+    el.textContent = `HTTP ${response.status} ${response.statusText}\n\n${JSON.stringify(data, null, 2)}`;
+    el.className = 'response ' + (
+      response.ok          ? 'ok'       :
+      response.status===401 ? 'err401'  :
+      response.status===403 ? 'err403'  : 'err-other'
+    );
+  }
+
+  // ── Demo 1 ─────────────────────────────────────────────────────────────────
+  async function d1Broken() {
+    const spoofId = parseInt(document.getElementById('d1-spoof').value);
+    const r = await fetch('/api/broken/transfer', {
+      method: 'POST',
+      headers: authHeaders(true),
+      body: JSON.stringify({ from: 'ACC-1001', to: 'ACC-9999', amount: 50000, userId: spoofId }),
+    });
+    display('d1-broken-out', r);
+  }
+
+  async function d1Secure() {
+    const spoofId = parseInt(document.getElementById('d1-spoof-s').value);
+    const r = await fetch('/api/secure/transfer', {
+      method: 'POST',
+      headers: authHeaders(true),
+      body: JSON.stringify({ from: 'ACC-1001', to: 'ACC-9999', amount: 50000, userId: spoofId }),
+    });
+    display('d1-secure-out', r);
+  }
+
+  // ── Demo 2 ─────────────────────────────────────────────────────────────────
+  async function d2Broken() {
+    const id = document.getElementById('d2-id-b').value;
+    const r = await fetch(`/api/broken/orders/${id}`, { headers: authHeaders() });
+    display('d2-broken-out', r);
+  }
+
+  async function d2Secure() {
+    const id   = document.getElementById('d2-id-s').value;
+    const mode = document.getElementById('d2-mode').value;
+    const url  = `/api/secure/orders/${id}${mode ? `?mode=${mode}` : ''}`;
+    const r = await fetch(url, { headers: authHeaders() });
+    display('d2-secure-out', r);
+  }
+
+  // ── Demo 3 ─────────────────────────────────────────────────────────────────
+  async function d3Broken() {
+    const id = document.getElementById('d3-id-b').value;
+    const r = await fetch(`/api/broken/sellers/${id}`, { method: 'DELETE', headers: authHeaders() });
+    display('d3-broken-out', r);
+  }
+
+  async function d3Secure() {
+    const id = document.getElementById('d3-id-s').value;
+    const r = await fetch(`/api/secure/sellers/${id}`, { method: 'DELETE', headers: authHeaders() });
+    display('d3-secure-out', r);
+  }
+
+  // ── Demo 4 ─────────────────────────────────────────────────────────────────
+  async function d4Test(token, orderId, hide, outId) {
+    const url = `/api/secure/orders/${orderId}${hide ? '?mode=hide' : ''}`;
+    const h = authHeadersForToken(token);
+    const r = await fetch(url, { headers: h });
+    display(outId, r);
+  }
+
+  // ── Demo 5 ─────────────────────────────────────────────────────────────────
+  async function d5BrokenLogout() {
+    const r = await fetch('/api/broken/logout', { method: 'POST', headers: authHeaders() });
+    display('d5-broken-logout', r);
+  }
+
+  async function d5SecureLogout() {
+    const r = await fetch('/api/secure/logout', { method: 'POST', headers: authHeaders() });
+    display('d5-secure-logout', r);
+  }
+
+  async function d5Check(outId) {
+    const r = await fetch('/api/profile', { headers: authHeaders() });
+    display(outId, r);
+  }
+
+  // ── Reset ───────────────────────────────────────────────────────────────────
+  async function resetAll() {
+    const r = await fetch('/api/reset', { method: 'POST' });
+    const data = await r.json();
+    document.getElementById('reset-out').textContent = data.message;
+    if (document.getElementById('reset-out-5'))
+      document.getElementById('reset-out-5').textContent = data.message;
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "lesson-one",
+  "version": "1.0.0",
+  "description": "Lesson 1.1 — Identity, Trust and the Three Questions",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
